@@ -25,7 +25,10 @@ function preProcessBuild() {
 
 function startGradleBuild() {
   echo "startGradleBuild"
+  # mac下执行sed -i需要备份，所以这里先给个bak备份然后再删除bak备份文件
   sed -i '.bak' '/shellBuild/d' ../settings.gradle && rm -f ../settings.gradle.bak
+
+  bash gradlew "clean"
 }
 
 function main() {
