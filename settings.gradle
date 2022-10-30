@@ -1,0 +1,6 @@
+include ':app'
+rootProject.name = "BuildApkByShell"
+
+/* --shellBuild--
+project(":app").setBuildFileName("build_app.gradle.gradle")
+--shellBuild-- */
