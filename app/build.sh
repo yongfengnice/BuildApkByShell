@@ -6,16 +6,22 @@
 
 declare -A options   # -A声明map,也叫关联数组
 declare -a arguments # -a声明list
-declare android_sdk
+declare androidSdk
+declare buildType
 
 function handleOptions() {
   processOptions $*
+  buildType=${options["buildType"]}
+  if ! [ "$buildType" == "debug" ] && ! [ "$buildType" == "release" ]; then
+    buildType="debug"
+  fi
+  echo "buildType==$buildType"
 }
 
 function handleAndroidSdk() {
   processAndroidSdk $*
-  echo "Android SDK Path = $android_sdk"
-  export PATH=$android_sdk/tools:$android_sdk/platform-tools:$PATH
+  echo "Android SDK Path=$androidSdk"
+  export PATH=$androidSdk/tools:$androidSdk/platform-tools:$PATH
   export LANG=en_US.UTF-8
 }
 
@@ -24,17 +30,32 @@ function preProcessBuild() {
 }
 
 function startGradleBuild() {
+  local buildOk="false"
   echo "startGradleBuild"
   # mac下执行sed -i需要备份，所以这里先给个bak备份然后再删除bak备份文件
   sed -i '.bak' '/shellBuild/d' ../settings.gradle && rm -f ../settings.gradle.bak
 
-  bash gradlew "clean"
+  bash ../gradlew "clean"
+  rm -Rf bin
+
+  #bash ../gradlew :app:depend --scan #--configuration implementation
+  #-i/--info -d/--debug -s/--stacktrace
+  bash ../gradlew ":app:assemble${buildType}" -s -Pnew_package=$newpackagename -PBASE_GIT_VER=$gitver 2>&1 | tee -a buildLog && buildOk="true"
+
+  [ -d bin ] || mkdir -p bin
+  cp -Rf build/outputs/apk/* bin/ && buildOk="true"
+  if [ "$buildOk" = "false" ] || ! [ -d "bin/${buildType}" ]; then
+    echo "Build FAILURE!!! Please see log in buildLog"
+    return 1
+  else
+    return 0
+  fi
 }
 
 function main() {
   source ./options.sh
 
-  echo "Build Log:" >>build.log
+  echo "Build Log:" >buildLog
   local buildOk=false
   handleOptions "$@"
   handleAndroidSdk "$@"
@@ -48,7 +69,8 @@ function main() {
   fi
 
   #sudo chmod +x build.sh添加可执行权限
-  #./build.sh --version=100 --channel=yyb --enable-push
+  #./build.sh --buildType=debug --version=100 --channel=yyb --enable-push
+  #./build.sh --buildType=release --version=100 --channel=yyb --enable-push
   echo "options-01:${options["version"]}"
   echo "options-02:${options["channel"]}"
 

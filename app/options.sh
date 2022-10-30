@@ -72,7 +72,7 @@ function processAndroidSdk() {
     adb_relative_path="platform-tools/adb"
   fi
 
-  if [ -f ../android-sdk.properties ]; then
+  if [ -f ../android-sdk.properties ]; then #可以换为local.properties
     local sdk_line=$(grep "sdk.dir=" ../android-sdk.properties)
     local sdk_dir=${sdk_line##*=}
     if [ "$OSTYPE" = "cygwin" ]; then
@@ -80,21 +80,21 @@ function processAndroidSdk() {
     fi
 
     if [ -f $sdk_dir/$android_relative_path ] && [ -f $sdk_dir/$adb_relative_path ]; then
-      android_sdk=$sdk_dir
+      androidSdk=$sdk_dir
     else
       echo "Please specify the correct sdk.dir in ../android-sdk.properties"
       return 1
     fi
   fi
 
-  if [ -z $android_sdk ]; then
+  if [ -z $androidSdk ]; then
     adb_path=$(which adb 2>/dev/null)
     if [ -f $adb_path ]; then
-      android_sdk=$(dirname $(dirname $adb_path))
+      androidSdk=$(dirname $(dirname $adb_path))
     fi
   fi
 
-  if [ -z $android_sdk ] || ! [ -d $android_sdk ]; then
+  if [ -z $androidSdk ] || ! [ -d $androidSdk ]; then
     echo "Please set ANDROID_SDK to the correct path:"
     echo "* specify sdk.dir in android-sdk.properties or"
     echo "* add <SDK>/tools and <SDK>/platform-tools to system path or"
