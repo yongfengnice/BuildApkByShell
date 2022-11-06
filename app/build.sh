@@ -92,7 +92,7 @@ function main() {
     return 1
   fi
   if ! [ -z $lastGitVer ]; then
-    $(git reset --hard $lastGitVer)
+    git reset --hard $lastGitVer
   fi
 
 }
