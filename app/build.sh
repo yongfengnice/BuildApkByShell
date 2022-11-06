@@ -84,15 +84,16 @@ function main() {
   echo "options-01:${options["newPkgName"]}"
   echo "options-02:${options["channel"]}"
 
+  if ! [ -z $lastGitVer ]; then
+    git reset --hard $lastGitVer
+  fi
+
   if [ $buildOk = true ]; then
     echo "Build SUCCESS"
     return 0
   else
     echo "Build FAILURE!!!"
     return 1
-  fi
-  if ! [ -z $lastGitVer ]; then
-    git reset --hard $lastGitVer
   fi
 
 }
