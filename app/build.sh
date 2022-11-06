@@ -8,6 +8,7 @@ declare -A options   # -A声明map,也叫关联数组
 declare -a arguments # -a声明list
 declare androidSdk
 declare buildType
+declare lastGitVer
 
 function handleOptions() {
   processOptions $*
@@ -26,6 +27,11 @@ function handleAndroidSdk() {
 }
 
 function preProcessBuild() {
+  if [ -z $lastGitVer ]; then
+    lastGitVer=$(git log --pretty=format:'%h' -n 1)
+  fi
+  echo "lastGitVer=$lastGitVer"
+
   echo "preProcessBuild"
 }
 
@@ -84,6 +90,9 @@ function main() {
   else
     echo "Build FAILURE!!!"
     return 1
+  fi
+  if ! [ -z $lastGitVer ]; then
+    $(git reset --hard $lastGitVer)
   fi
 
 }
