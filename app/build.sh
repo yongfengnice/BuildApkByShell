@@ -40,7 +40,10 @@ function startGradleBuild() {
 
   #bash ../gradlew :app:depend --scan #--configuration implementation
   #-i/--info -d/--debug -s/--stacktrace
-  bash ../gradlew ":app:assemble${buildType}" -s -Pnew_package=$newpackagename -PBASE_GIT_VER=$gitver 2>&1 | tee -a buildLog && buildOk="true"
+  #-P传递构建参数给project ext，可以通过project.ext.get("newPkgName")获取
+  bash ../gradlew ":app:assemble${buildType}" -s \
+    -PnewPkgName=${options["newPkgName"]} \
+    2>&1 | tee -a buildLog && buildOk="true"
 
   [ -d bin ] || mkdir -p bin
   cp -Rf build/outputs/apk/* bin/ && buildOk="true"
@@ -62,16 +65,17 @@ function main() {
   preProcessBuild
   startGradleBuild && buildOk=true
 
+  #test isOptionEnabled call
   if isOptionEnabled "push"; then
     echo "is push enable=true"
   else
     echo "is push enable=false"
   fi
 
-  #sudo chmod +x build.sh添加可执行权限
-  #./build.sh --buildType=debug --version=100 --channel=yyb --enable-push
-  #./build.sh --buildType=release --version=100 --channel=yyb --enable-push
-  echo "options-01:${options["version"]}"
+  #打开Terminal，cd app切换到app目录下，sudo chmod +x build.sh添加可执行权限
+  #./build.sh --buildType=debug --newPkgName="com.suyf.test" --channel=yyb --enable-push
+  #./build.sh --buildType=release --newPkgName="com.suyf.test" --channel=yyb --enable-push
+  echo "options-01:${options["newPkgName"]}"
   echo "options-02:${options["channel"]}"
 
   if [ $buildOk = true ]; then
